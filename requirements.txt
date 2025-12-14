@@ -1,0 +1,6 @@
+fastapi>=0.124.0
+uvicorn>=0.38.0
+sqlalchemy>=2.0.0
+pyshark>=0.6
+scikit-learn>=1.8.0
+numpy>=2.3.0
