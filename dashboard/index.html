@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NIDRS Dashboard</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header class="header">
+        <h1>NIDRS Dashboard</h1>
+        <div id="status-badge" class="status-badge offline">
+            <span class="status-dot"></span>
+            <span id="status-text">Connecting...</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card packets">
+                <div class="icon">📦</div>
+                <div class="label">Total Packets Captured</div>
+                <div class="value" id="total-packets">0</div>
+            </div>
+            <div class="stat-card protocols">
+                <div class="icon">🔌</div>
+                <div class="label">Unique Protocols</div>
+                <div class="value" id="total-protocols">0</div>
+            </div>
+            <div class="stat-card alerts">
+                <div class="icon">🚨</div>
+                <div class="label">Security Alerts</div>
+                <div class="value" id="total-alerts">0</div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">📊 Protocol Distribution</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="protocolChart"></canvas>
+                </div>
+                <div class="protocol-list" id="protocol-list"></div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">🚨 Security Alerts</h2>
+                    <span id="alert-count" style="color: rgba(255,255,255,0.5); font-size: 14px;">0 alerts</span>
+                </div>
+                <div class="alerts-list" id="alerts-list">
+                    <div class="no-alerts">No alerts detected<br><small>System is secure</small></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="refresh-info">
+            Auto-refreshing every 2 seconds | Last update: <span id="last-update">-</span>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
