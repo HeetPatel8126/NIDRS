@@ -10,10 +10,12 @@ A real-time network intrusion detection system powered by machine learning. NIDR
 
 - **Real-time Packet Capture** - Live network traffic monitoring using PyShark/Wireshark
 - **ML-based Anomaly Detection** - Isolation Forest algorithm to detect unusual network behavior
-- **Web Dashboard** - Interactive real-time dashboard with charts and statistics
-- **Persistent Storage** - SQLite database for storing traffic logs, alerts, and blocked IPs
+- **Attack Chain Detection** - Identifies multi-stage attacks (reconnaissance → exploitation → data exfiltration)
+- **Alert Correlation** - Groups related alerts to reduce noise and identify patterns
+- **Dynamic Alert Scoring** - Prioritizes alerts based on severity, frequency, and context
+- **Log Ingestion** - Imports and analyzes external log files (Windows Event Logs, Syslog, etc.)
+- **Web Dashboard** - Interactive React-based dashboard with real-time charts and statistics
 - **REST API** - Full API for querying traffic data, alerts, and managing blocked IPs
-- **Alert Management** - Track, resolve, and manage security alerts
 - **IP Blocking** - Block suspicious IP addresses with automatic tracking
 
 ## 📁 Project Structure
@@ -21,164 +23,90 @@ A real-time network intrusion detection system powered by machine learning. NIDR
 ```
 NIDRS/
 ├── backend/
-│   ├── main.py          # FastAPI application & API endpoints
-│   ├── capture.py       # Network packet capture using PyShark
-│   ├── detector.py      # ML anomaly detection (Isolation Forest)
-│   ├── engine.py        # Main processing engine
-│   ├── features.py      # Feature extraction from packets
-│   ├── database.py      # SQLAlchemy models & database operations
-│   ├── state.py         # In-memory state management
-│   └── response.py      # Response handling
-├── dashboard/
-│   ├── index.html       # Dashboard UI
-│   ├── styles.css       # Dashboard styling
-│   └── script.js        # Dashboard JavaScript
+│   ├── main.py              # FastAPI application & API endpoints
+│   ├── capture.py           # Network packet capture using PyShark
+│   ├── detector.py          # ML anomaly detection (Isolation Forest)
+│   ├── engine.py            # Main processing engine
+│   ├── features.py          # Feature extraction from packets
+│   ├── database.py          # SQLAlchemy models & database operations
+│   ├── state.py             # In-memory state management
+│   ├── response.py          # Response handling
+│   ├── alert_scoring.py     # Dynamic alert priority scoring
+│   ├── attack_chain.py      # Multi-stage attack detection
+│   ├── correlation.py       # Alert correlation engine
+│   └── log_ingestion.py     # External log file processing
+├── dashboard-react/         # React-based dashboard
+│   ├── src/
+│   │   ├── App.js
+│   │   └── components/      # React components
+│   └── build/               # Production build
 ├── data/
-│   └── traffic.db       # SQLite database
-├── env/                 # Python virtual environment
-├── requirements.txt     # Python dependencies
+│   └── traffic.db           # SQLite database
+├── test_attack.py           # Attack simulation for testing
+├── benchmark_accuracy.py    # Detection accuracy benchmarking
+├── requirements.txt         # Python dependencies
 └── README.md
 ```
 
-## 🛠️ Prerequisites
-
-- **Python 3.12+**
-- **Wireshark** (with tshark) - [Download](https://www.wireshark.org/download.html)
-- **Windows** (currently configured for Windows, can be adapted for Linux/macOS)
-
-## 🚀 Installation
+## 🚀 Quick Start
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/HeetPatel8126/NDIRS.git
-   cd NDIRS
+   git clone https://github.com/HeetPatel8126/NIDRS.git
+   cd NIDRS
    ```
 
 2. **Create and activate virtual environment**
    ```bash
    python -m venv env
-   
-   # Windows
-   .\env\Scripts\Activate.ps1
-   
-   # Linux/macOS
-   source env/bin/activate
+   .\env\Scripts\Activate.ps1   # Windows
+   source env/bin/activate       # Linux/macOS
    ```
 
 3. **Install dependencies**
    ```bash
-   pip install fastapi uvicorn sqlalchemy pyshark scikit-learn numpy
+   pip install -r requirements.txt
    ```
 
-4. **Configure Wireshark path** (if different)
-   
-   Edit `backend/capture.py` and update the tshark path:
-   ```python
-   pyshark.tshark.tshark_path = r"C:\Program Files\Wireshark\tshark.exe"
-   ```
-
-5. **Set network interface**
-   
-   Edit `backend/capture.py` and set your network interface:
-   ```python
-   INTERFACE = "Wi-Fi"  # Change to your interface name
-   ```
-
-## ▶️ Running the Application
-
-1. **Start the server**
+4. **Start the server**
    ```bash
    uvicorn backend.main:app --reload
    ```
 
-2. **Access the dashboard**
-   
-   Open your browser and navigate to: `http://localhost:8000`
-
-3. **API Documentation**
-   
-   Interactive API docs available at: `http://localhost:8000/docs`
+5. **Access the dashboard**
+   - Dashboard: `http://localhost:8000`
+   - API Docs: `http://localhost:8000/docs`
 
 ## 📡 API Endpoints
 
-### Status & Statistics
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/api/status` | GET | System status |
 | `/stats` | GET | Live packet statistics |
-| `/api/stats/summary` | GET | Comprehensive statistics summary |
-
-### Alerts
-| Endpoint | Method | Description |
-|----------|--------|-------------|
 | `/alerts` | GET | Get live alerts |
-| `/api/alerts/history` | GET | Query historical alerts |
-| `/api/alerts/{id}/resolve` | POST | Mark alert as resolved |
-
-### Traffic
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/traffic/recent` | GET | Recent traffic records |
-| `/api/traffic/by-ip/{ip}` | GET | Traffic for specific IP |
-
-### IP Management
-| Endpoint | Method | Description |
-|----------|--------|-------------|
+| `/api/alerts/correlated` | GET | Get correlated alert groups |
+| `/api/attack-chains` | GET | Get detected attack chains |
 | `/api/blocked-ips` | GET | List blocked IPs |
 | `/api/block-ip/{ip}` | POST | Block an IP address |
-| `/api/unblock-ip/{ip}` | POST | Unblock an IP address |
 
-## 🧠 How It Works
+## 🧪 Testing
 
-1. **Packet Capture**: PyShark captures live network packets from the specified interface
-2. **Feature Extraction**: Extracts features like packet count, byte count, and rate per IP
-3. **Learning Phase**: First 50 packets are used to train the Isolation Forest model
-4. **Detection**: Each subsequent packet is analyzed for anomalies
-5. **Alerting**: Anomalies trigger alerts stored in the database and shown on dashboard
-6. **Storage**: All traffic and alerts are persisted to SQLite for historical analysis
-
-## 📊 Database Schema
-
-### Tables
-- **traffic** - Network traffic records (src_ip, dst_ip, protocol, packet_size, timestamp)
-- **alerts** - Security alerts (type, severity, src_ip, description, is_resolved)
-- **blocked_ips** - Blocked IP addresses with reasons
-- **system_stats** - Periodic system statistics snapshots
-
-## ⚠️ Important Notes
-
-- **Administrator Privileges**: Packet capture may require running as administrator
-- **Wireshark Installation**: Ensure Wireshark is installed with tshark component
-- **Network Interface**: Update the `INTERFACE` variable to match your system
-- **Firewall**: May need to allow the application through your firewall
-
-## 🔧 Configuration
-
-### Detector Settings (`backend/detector.py`)
-```python
-model = IsolationForest(
-    contamination=0.05,  # Expected anomaly rate
-    random_state=42
-)
+Run the attack simulation to test detection:
+```bash
+python test_attack.py
 ```
 
-### Batch Size (`backend/engine.py`)
-```python
-BATCH_SIZE = 100  # Database commit frequency
+Run accuracy benchmarks:
+```bash
+python benchmark_accuracy.py
 ```
+
+## ⚠️ Requirements
+
+- **Python 3.12+**
+- **Wireshark** (with tshark) - [Download](https://www.wireshark.org/download.html)
+- **Administrator Privileges** for packet capture
 
 ## 📝 License
 
 This project is licensed under the MIT License.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📧 Contact
-
-For questions or support, please open an issue on GitHub.
-
----
-
-**⭐ Star this repo if you find it useful!**
