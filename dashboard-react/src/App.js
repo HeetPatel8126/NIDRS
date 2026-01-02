@@ -1,16 +1,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
+import Navigation from './components/Navigation';
 import StatsGrid from './components/StatsGrid';
 import ProtocolChart from './components/ProtocolChart';
 import TrafficChart from './components/TrafficChart';
 import AlertsPanel from './components/AlertsPanel';
 import TopSourcesChart from './components/TopSourcesChart';
+import CorrelationPage from './components/CorrelationPage';
+import AttackChainsPage from './components/AttackChainsPage';
+import LogsPage from './components/LogsPage';
+import AlertsPageFull from './components/AlertsPageFull';
 import './App.css';
 
 // Use relative URLs when served from FastAPI, or full URL for development
 const API_BASE = process.env.NODE_ENV === 'production' ? '' : 'http://127.0.0.1:8000';
 
 function App() {
+  const [currentPage, setCurrentPage] = useState('dashboard');
   const [isConnected, setIsConnected] = useState(false);
   const [stats, setStats] = useState({
     total_packets: 0,
@@ -71,31 +77,48 @@ function App() {
 
   const protocolCount = Object.keys(stats.protocols).length;
 
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'correlation':
+        return <CorrelationPage />;
+      case 'attack-chains':
+        return <AttackChainsPage />;
+      case 'logs':
+        return <LogsPage />;
+      case 'alerts':
+        return <AlertsPageFull />;
+      default:
+        return (
+          <main className="container">
+            <StatsGrid 
+              totalPackets={stats.total_packets}
+              protocolCount={protocolCount}
+              alertCount={alerts.length}
+            />
+
+            <div className="charts-grid">
+              <ProtocolChart protocols={stats.protocols} />
+              <TrafficChart trafficHistory={trafficHistory} />
+            </div>
+
+            <div className="main-grid">
+              <TopSourcesChart alerts={alerts} />
+              <AlertsPanel alerts={alerts} />
+            </div>
+
+            <div className="refresh-info">
+              Auto-refreshing every 2 seconds | Last update: {lastUpdate ? lastUpdate.toLocaleTimeString() : '-'}
+            </div>
+          </main>
+        );
+    }
+  };
+
   return (
     <div className="app">
       <Header isConnected={isConnected} />
-      
-      <main className="container">
-        <StatsGrid 
-          totalPackets={stats.total_packets}
-          protocolCount={protocolCount}
-          alertCount={alerts.length}
-        />
-
-        <div className="charts-grid">
-          <ProtocolChart protocols={stats.protocols} />
-          <TrafficChart trafficHistory={trafficHistory} />
-        </div>
-
-        <div className="main-grid">
-          <TopSourcesChart alerts={alerts} />
-          <AlertsPanel alerts={alerts} />
-        </div>
-
-        <div className="refresh-info">
-          Auto-refreshing every 2 seconds | Last update: {lastUpdate ? lastUpdate.toLocaleTimeString() : '-'}
-        </div>
-      </main>
+      <Navigation currentPage={currentPage} setCurrentPage={setCurrentPage} />
+      {renderPage()}
     </div>
   );
 }
